@@ -87,7 +87,7 @@ if uploaded_file is not None:
         st.subheader("Summary of Cleaning Actions")
         st.write(f"Original shape: {df.shape}")
         st.write(f"Cleaned shape: {df_cleaned.shape}")
-       st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
+        st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
 
 # Download button for cleaned dataset
 import io
