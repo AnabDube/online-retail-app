@@ -57,47 +57,47 @@ if uploaded_file is not None:
             st.info("No numeric columns available for correlation heatmap.")
 
     # TAB 2 - Data Cleaning
-    with tab2:
-        st.header("Data Cleaning")
-        missing_values = df.isnull().sum()
-        missing_cols = missing_values[missing_values > 0].index.tolist()
+with tab2:
+    st.header("Data Cleaning")
+    missing_values = df.isnull().sum()
+    missing_cols = missing_values[missing_values > 0].index.tolist()
 
-        if not missing_cols:
-            st.success("No missing values found!")
-            df_cleaned = df.copy()
+    if not missing_cols:
+        st.success("No missing values found!")
+        df_cleaned = df.copy()
+    else:
+        st.warning(f"Found {len(missing_cols)} columns with missing values: {', '.join(missing_cols)}")
+        cleaning_option = st.selectbox("How to handle missing values?",
+                                       ["Drop rows with missing values", "Impute missing values"])
+
+        if cleaning_option == "Drop rows with missing values":
+            df_cleaned = df.dropna()
+            st.write("Dropped rows with missing values.")
         else:
-            st.warning(f"Found {len(missing_cols)} columns with missing values: {', '.join(missing_cols)}")
-            cleaning_option = st.selectbox("How to handle missing values?",
-                                           ["Drop rows with missing values", "Impute missing values"])
-            if cleaning_option == "Drop rows with missing values":
-                df_cleaned = df.dropna()
-                st.write("Dropped rows with missing values.")
-            else:
-                df_cleaned = df.copy()
-                for col in missing_cols:
-                    if df_cleaned[col].dtype == 'object':
-                        df_cleaned[col].fillna(df_cleaned[col].mode()[0], inplace=True)
-                    else:
-                        df_cleaned[col].fillna(df_cleaned[col].median(), inplace=True)
-                st.write("Imputed missing values with mode (categorical) and median (numerical).")
+            df_cleaned = df.copy()
+            for col in missing_cols:
+                if df_cleaned[col].dtype == 'object':
+                    df_cleaned[col].fillna(df_cleaned[col].mode()[0], inplace=True)
+                else:
+                    df_cleaned[col].fillna(df_cleaned[col].median(), inplace=True)
+            st.write("Imputed missing values with mode (for categorical) and median (for numerical).")
 
-        st.subheader("Cleaned DataFrame Head")
-        st.write(df_cleaned.head())
+    st.subheader("Cleaned DataFrame Head")
+    st.write(df_cleaned.head())
 
-        st.subheader("Summary of Cleaning Actions")
-        st.write(f"Original shape: {df.shape}")
-        st.write(f"Cleaned shape: {df_cleaned.shape}")
-        st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
+    st.subheader("Summary of Cleaning Actions")
+    st.write(f"Original shape: {df.shape}")
+    st.write(f"Cleaned shape: {df_cleaned.shape}")
+    st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
 
-# Download button for cleaned dataset
-import io
-csv = df_cleaned.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="Download Cleaned Data as CSV",
-    data=csv,
-    file_name='cleaned_data.csv',
-    mime='text/csv'
-)
+    # ✅ Download button goes here
+    csv = df_cleaned.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download Cleaned Data as CSV",
+        data=csv,
+        file_name='cleaned_data.csv',
+        mime='text/csv'
+    )
 
 # TAB 3 - Automatic Visualizations
 with tab3:
