@@ -87,8 +87,9 @@ if uploaded_file is not None:
         st.subheader("Summary of Cleaning Actions")
         st.write(f"Original shape: {df.shape}")
         st.write(f"Cleaned shape: {df_cleaned.shape}")
-        st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
-        # Download button for cleaned dataset
+       st.write(f"Number of dropped rows: {df.shape[0] - df_cleaned.shape[0]}")
+
+# Download button for cleaned dataset
 import io
 csv = df_cleaned.to_csv(index=False).encode('utf-8')
 st.download_button(
@@ -98,9 +99,9 @@ st.download_button(
     mime='text/csv'
 )
 
-    # TAB 3 - Automatic Visualizations
-    with tab3:
-        st.header("Automatic Visualizations")
+# TAB 3 - Automatic Visualizations
+with tab3:
+    st.header("Automatic Visualizations")
         if 'df_cleaned' not in locals():
             st.warning("Please clean the data in the 'Data Cleaning' tab first.")
         else:
