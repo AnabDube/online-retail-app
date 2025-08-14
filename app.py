@@ -21,36 +21,37 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='latin1')
     st.success("File successfully uploaded!")
 
-     # Create tabs
+    # Create tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["Basic EDA", "Data Cleaning", "Auto Visualizations", "ML Preparation", "Machine Learning"]
     )
 
-with tab1:
-    st.header("Basic Exploratory Data Analysis")
+    with tab1:
+        st.header("Basic Exploratory Data Analysis")
 
-    st.subheader("DataFrame Head")
-    st.write(df.head())
+        st.subheader("DataFrame Head")
+        st.write(df.head())
 
-    st.subheader("DataFrame Info")
-    import io
-    buffer = io.StringIO()
-    df.info(buf=buffer)
-    s = buffer.getvalue()
-    st.text(s)
+        st.subheader("DataFrame Info")
+        import io
+        buffer = io.StringIO()
+        df.info(buf=buffer)
+        s = buffer.getvalue()
+        st.text(s)
 
-    st.subheader("DataFrame Description")
-    st.write(df.describe())
+        st.subheader("DataFrame Description")
+        st.write(df.describe())
 
-    st.subheader("Missing Values")
-    st.write(df.isnull().sum())
+        st.subheader("Missing Values")
+        st.write(df.isnull().sum())
 
-    st.subheader("Correlation Heatmap")
-    numeric_cols = df.select_dtypes(include=np.number).columns
-    corr = df[numeric_cols].corr()
-    fig, ax = plt.subplots()
-    sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
-    st.pyplot(fig)
+        st.subheader("Correlation Heatmap")
+        numeric_cols = df.select_dtypes(include=np.number).columns
+        corr = df[numeric_cols].corr()
+        fig, ax = plt.subplots()
+        sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
+        st.pyplot(fig)
+
 
 
 with tab2:
