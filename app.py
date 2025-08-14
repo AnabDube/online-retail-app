@@ -21,8 +21,8 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='latin1')
     st.success("File successfully uploaded!")
 
-    # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+# Create tabs
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["Basic EDA", "Data Cleaning", "Auto Visualizations", "ML Preparation", "Machine Learning"]
     )
 
