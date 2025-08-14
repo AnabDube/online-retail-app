@@ -16,18 +16,17 @@ st.title("Automated EDA and Machine Learning App")
 
 # Upload data
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='latin1')
     st.success("File successfully uploaded!")
 
-# Create tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
+  # Create tabs
+  tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["Basic EDA", "Data Cleaning", "Auto Visualizations", "ML Preparation", "Machine Learning"]
     )
 
-# TAB 1 - Basic EDA
-with tab1:
+  # TAB 1 - Basic EDA
+  with tab1:
     st.header("Basic Exploratory Data Analysis")
 
     st.subheader("DataFrame Head")
@@ -57,8 +56,8 @@ with tab1:
         st.info("No numeric columns available for correlation heatmap.")
 
 
-# TAB 2 - Data Cleaning
-with tab2:
+  # TAB 2 - Data Cleaning
+  with tab2:
     st.header("Data Cleaning")
     missing_values = df.isnull().sum()
     missing_cols = missing_values[missing_values > 0].index.tolist()
@@ -103,8 +102,8 @@ with tab2:
     )
 
 
-# TAB 3 - Automatic Visualizations
-with tab3:
+  # TAB 3 - Automatic Visualizations
+  with tab3:
     st.header("Automatic Visualizations")
     if 'df_cleaned' not in locals():
         st.warning("Please clean the data in the 'Data Cleaning' tab first.")
@@ -133,8 +132,8 @@ with tab3:
                 st.pyplot(fig)
 
 
-# TAB 4 - Machine Learning Preparation
-with tab4:
+  # TAB 4 - Machine Learning Preparation
+  with tab4:
     st.header("Machine Learning Preparation")
     if 'df_cleaned' not in locals():
         st.warning("Please clean the data in the 'Data Cleaning' tab first.")
@@ -153,8 +152,8 @@ with tab4:
         st.success("Data is now ready for modeling.")
 
 
-# TAB 5 - Apply Machine Learning
-with tab5:
+  # TAB 5 - Apply Machine Learning
+  with tab5:
     st.header("Apply Machine Learning Model")
     if 'df_ml' not in locals():
         st.warning("Please prepare the data in the 'ML Preparation' tab first.")
