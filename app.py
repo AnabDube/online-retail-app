@@ -104,7 +104,7 @@ with tab3:
     st.header("Automatic Visualizations")
     if 'df_cleaned' not in locals():
         st.warning("Please clean the data in the 'Data Cleaning' tab first.")
-        else:
+    else:
             st.subheader("Visualizations")
             for col in df_cleaned.columns:
                 if df_cleaned[col].dtype == 'object':
