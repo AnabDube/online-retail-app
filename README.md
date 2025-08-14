@@ -81,7 +81,7 @@ Python 3.8+
 pip
 
 Installation
-git clone https://github.com/yourusername/online-retail-app.git
+git clone https://github.com/AnabDube/online-retail-app.git
 cd online-retail-app
 pip install -r requirements.txt
 
