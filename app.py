@@ -57,7 +57,7 @@ if uploaded_file is not None:
             st.info("No numeric columns available for correlation heatmap.")
 
     # TAB 2 - Data Cleaning
-with tab2:
+    with tab2:
     st.header("Data Cleaning")
     missing_values = df.isnull().sum()
     missing_cols = missing_values[missing_values > 0].index.tolist()
