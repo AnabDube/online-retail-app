@@ -44,11 +44,12 @@ if uploaded_file is not None:
         st.write(df.isnull().sum())
 
         st.subheader("Correlation Heatmap")
-        numeric_cols = df.select_dtypes(include=np.number).columns
-        corr = df[numeric_cols].corr()
-        fig, ax = plt.subplots()
+numeric_cols = df.select_dtypes(include=np.number).columns
+corr = df[numeric_cols].corr()
+fig, ax = plt.subplots()
 sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
 st.pyplot(fig)
+
 
 
     with tab2:
@@ -88,12 +89,13 @@ st.pyplot(fig)
         else:
             st.subheader("Visualizations")
             for col in df_cleaned.columns:
-                if df_cleaned[col].dtype == 'object':
-                    st.subheader(f"Bar plot for {col}")
-                    st.write(f"This plot shows the distribution of the categorical variable '{col}'.")
-                    fig, ax = plt.subplots()
-sns.countplot(y=col, data=df_cleaned, order=df_cleaned[col].value_counts().index[:10], ax=ax)
-st.pyplot(fig)
+    if df_cleaned[col].dtype == 'object':
+        st.subheader(f"Bar plot for {col}")
+        st.write(f"This plot shows the distribution of the categorical variable '{col}'.")
+        fig, ax = plt.subplots()
+        sns.countplot(y=col, data=df_cleaned, order=df_cleaned[col].value_counts().index[:10], ax=ax)
+        st.pyplot(fig)
+
 
                 else:
                     st.subheader(f"Histogram for {col}")
