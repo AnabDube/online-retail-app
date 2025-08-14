@@ -102,8 +102,8 @@ st.download_button(
 # TAB 3 - Automatic Visualizations
 with tab3:
     st.header("Automatic Visualizations")
-        if 'df_cleaned' not in locals():
-            st.warning("Please clean the data in the 'Data Cleaning' tab first.")
+    if 'df_cleaned' not in locals():
+        st.warning("Please clean the data in the 'Data Cleaning' tab first.")
         else:
             st.subheader("Visualizations")
             for col in df_cleaned.columns:
