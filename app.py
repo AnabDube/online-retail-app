@@ -58,9 +58,9 @@ if uploaded_file is not None:
 
     # TAB 2 - Data Cleaning
     with tab2:
-    st.header("Data Cleaning")
-    missing_values = df.isnull().sum()
-    missing_cols = missing_values[missing_values > 0].index.tolist()
+       st.header("Data Cleaning")
+       missing_values = df.isnull().sum()
+       missing_cols = missing_values[missing_values > 0].index.tolist()
 
     if not missing_cols:
         st.success("No missing values found!")
