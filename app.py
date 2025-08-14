@@ -46,8 +46,10 @@ if uploaded_file is not None:
         st.subheader("Correlation Heatmap")
         numeric_cols = df.select_dtypes(include=np.number).columns
         corr = df[numeric_cols].corr()
-        sns.heatmap(corr, annot=True, cmap='coolwarm')
-        st.pyplot()
+        fig, ax = plt.subplots()
+sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
+st.pyplot(fig)
+
 
     with tab2:
         st.header("Data Cleaning")
@@ -89,18 +91,24 @@ if uploaded_file is not None:
                 if df_cleaned[col].dtype == 'object':
                     st.subheader(f"Bar plot for {col}")
                     st.write(f"This plot shows the distribution of the categorical variable '{col}'.")
-                    sns.countplot(y=col, data=df_cleaned, order = df_cleaned[col].value_counts().index[:10])
-                    st.pyplot()
+                    fig, ax = plt.subplots()
+sns.countplot(y=col, data=df_cleaned, order=df_cleaned[col].value_counts().index[:10], ax=ax)
+st.pyplot(fig)
+
                 else:
                     st.subheader(f"Histogram for {col}")
                     st.write(f"This plot shows the distribution of the numerical variable '{col}'.")
-                    sns.histplot(df_cleaned[col], kde=True)
-                    st.pyplot()
+                    fig, ax = plt.subplots()
+sns.histplot(df_cleaned[col], kde=True, ax=ax)
+st.pyplot(fig)
+
 
                     st.subheader(f"Boxplot for {col}")
                     st.write(f"This plot shows the spread and outliers of the numerical variable '{col}'.")
-                    sns.boxplot(x=df_cleaned[col])
-                    st.pyplot()
+                    fig, ax = plt.subplots()
+sns.boxplot(x=df_cleaned[col], ax=ax)
+st.pyplot(fig)
+
 
     with tab4:
         st.header("Machine Learning Preparation")
