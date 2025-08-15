@@ -19,19 +19,7 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='latin1')
     st.success("File successfully uploaded!")
-        
-    # ===== Dataset Validation =====
-    try:
-        # Basic check for required columns
-        required_columns = ['InvoiceNo', 'StockCode', 'Description', 'Quantity', 'InvoiceDate', 'UnitPrice', 'Country']
-        missing_cols = [col for col in required_columns if col not in df.columns]
-        if missing_cols:
-            st.error(f"❌ The uploaded file is missing required columns: {missing_cols}")
-            st.stop()
-        
-    except Exception as e:
-        st.error(f"❌ Error reading or validating file: {e}")
-        st.stop()
+
 
     # Create tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
