@@ -139,15 +139,21 @@ if uploaded_file is not None:
             df_ml = df_cleaned.copy()
             le = LabelEncoder()
             for col in df_ml.select_dtypes(include='object').columns:
-                df_ml[col] = le.fit_transform(df_ml[col])
+                df_ml[col] = le.fit_transform(df_ml[col].astype(str))
 
-            scaler = StandardScaler()
-            numeric_cols = df_ml.select_dtypes(include=np.number).columns
-            df_ml[numeric_cols] = scaler.fit_transform(df_ml[numeric_cols])
+        # Select numeric columns again after encoding
+        numeric_cols = df_ml.select_dtypes(include=[np.number]).columns
 
-            st.subheader("Prepared DataFrame for Machine Learning")
-            st.write(df_ml.head())
-            st.success("Data is now ready for modeling.")
+        # Handle any missing values in numeric columns
+        df_ml[numeric_cols] = df_ml[numeric_cols].fillna(0)
+
+        # Scale numeric features
+        scaler = StandardScaler()
+        df_ml[numeric_cols] = scaler.fit_transform(df_ml[numeric_cols])
+
+        st.subheader("Prepared DataFrame for Machine Learning")
+        st.write(df_ml.head())
+        st.success("Data is now ready for modeling.")
 
     # TAB 5 - Apply Machine Learning
     with tab5:
