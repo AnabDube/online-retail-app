@@ -125,10 +125,15 @@ if uploaded_file is not None:
                     sns.histplot(df_cleaned[col], kde=True, ax=ax)
                     st.pyplot(fig)
 
-                    st.subheader(f"Boxplot for {col}")
-                    fig, ax = plt.subplots()
-                    sns.boxplot(x=df_cleaned[col], ax=ax)
-                    st.pyplot(fig)
+                    # Boxplot for numeric columns with enough data
+                    if df_cleaned[col].dtype != 'object':
+                        if df_cleaned[col].nunique(dropna=True) > 1:
+                            st.subheader(f"Boxplot for {col}")
+                            fig, ax = plt.subplots()
+                            sns.boxplot(x=df_cleaned[col], ax=ax)
+                            st.pyplot(fig)
+                        else:
+                            st.info(f"Skipping boxplot for {col} — not enough unique values.")
 
     # TAB 4 - Machine Learning Preparation
     with tab4:
