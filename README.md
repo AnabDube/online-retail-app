@@ -1,4 +1,4 @@
-Online Retail Data Analysis App
+Automated EDA and Machine Learning App
 
 An interactive Streamlit web application for automated Exploratory Data Analysis (EDA), data cleaning, visualization, and machine learning model building.
 
