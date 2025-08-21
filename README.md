@@ -1,101 +1,108 @@
-Automated EDA and Machine Learning App
+# Automated EDA and Machine Learning App
 
-An interactive Streamlit web application for automated Exploratory Data Analysis (EDA), data cleaning, visualization, and machine learning model building.
+A comprehensive Streamlit application that provides automated Exploratory Data Analysis (EDA), data cleaning, visualization, and machine learning capabilities in a user-friendly interface.
 
-With this app, users can upload any CSV dataset and instantly:
+## Features
 
-Inspect basic dataset statistics and info
+### 📊 Basic EDA
+- Data preview and information
+- Statistical summary
+- Missing values analysis
+- Correlation heatmap for numeric columns
 
-Identify and handle missing values
+### 🧹 Data Cleaning
+- Automatic missing value detection
+- Options to drop or impute missing values
+- Download cleaned dataset
 
-Generate automatic, relevant visualizations
+### 📈 Automatic Visualizations
+- Bar plots for categorical variables
+- Histograms and boxplots for numeric variables
+- Comprehensive EDA report generation
 
-Prepare the dataset for machine learning
+### 🤖 Machine Learning Preparation
+- Automatic label encoding for categorical variables
+- Feature scaling using StandardScaler
+- Data preparation for modeling
 
-Apply and compare different ML models
+### 🧠 Machine Learning
+- Automatic problem type detection (Classification/Regression)
+- Multiple model options:
+  - Classification: Logistic Regression, Decision Tree, Random Forest
+  - Regression: Linear Regression, Decision Tree, Random Forest
+- Performance metrics and visualizations
+- Model download and comprehensive reports
 
-Download cleaned datasets and results
+## Installation
 
-Features
-1. Automated EDA
+1. Clone or download this repository
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Displays .head(), .info(), and .describe() output
+## Usage
 
-Lists missing values per column
+1. Run the application:
+   ```bash
+   streamlit run app.py
+   ```
 
-Shows correlation heatmap for numerical features
+2. Upload your CSV file through the file uploader
 
-2. Data Cleaning
+3. Navigate through the tabs:
+   - **Basic EDA**: Get initial insights about your data
+   - **Data Cleaning**: Handle missing values and clean your dataset
+   - **Auto Visualizations**: Generate automatic plots for all variables
+   - **ML Preparation**: Prepare data for machine learning
+   - **Machine Learning**: Train and evaluate models
 
-Detects columns with missing values
+4. Download results:
+   - Cleaned datasets
+   - EDA reports
+   - Trained models
+   - Model performance reports
 
-Handles missing data (drop or impute)
+## Requirements
 
-Summarizes cleaning actions taken
+- Python 3.7+
+- Streamlit
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Seaborn
 
-3. Auto Visualizations
+## File Structure
 
-Histograms for numerical distributions
+```
+online-retail-app/
+├── app.py              # Main Streamlit application
+├── requirements.txt    # Python dependencies
+└── README.md          # This file
+```
 
-Bar plots for categorical variables
+## Example Usage
 
-Boxplots/violin plots for category comparisons
+1. Upload a CSV file containing your dataset
+2. Review the basic statistics and missing values in the EDA tab
+3. Clean your data by handling missing values appropriately
+4. Explore automatic visualizations for each variable
+5. Prepare your data for machine learning
+6. Select a target variable and train machine learning models
+7. Download the trained model and performance report
 
-Scatter plots for numerical relationships
+## Notes
 
-Line plots for time-series data (if applicable)
+- The app automatically detects whether you're working on a classification or regression problem
+- For best results, ensure your data is properly formatted before uploading
+- Large datasets may take longer to process, especially for visualizations and model training
+- The app includes error handling for common data processing issues
 
-4. Machine Learning Preparation
+## Contributing
 
-Encodes categorical variables
+Feel free to submit issues and enhancement requests!
 
-Scales numerical features
+## License
 
-Prepares clean DataFrame ready for modeling
-
-5. Machine Learning Models
-
-Lets users select a target variable
-
-Applies multiple ML models
-
-Reports accuracy, precision, recall, and F1-score
-
-How to Use
-Option 1 — Online (Recommended)
-
-Visit the live app:
-Live App Link Here
-
-Upload your CSV file
-
-Navigate through the tabs for EDA, Cleaning, Visualizations, and ML
-
-Download cleaned datasets and results
-
-Option 2 — Run Locally
-Prerequisites
-
-Python 3.8+
-
-pip
-
-Installation
-git clone https://github.com/AnabDube/online-retail-app.git
-cd online-retail-app
-pip install -r requirements.txt
-
-Run the App
-streamlit run app.py
-
-Dataset
-
-You can use your own dataset or publicly available datasets such as the Online Retail Dataset.
-
-Example Output
-
-(Add screenshots or GIFs of your app running here for visual appeal.)
-
-License
-
-This project is open-source and available under the MIT License.
+This project is open source and available under the MIT License.

@@ -9,7 +9,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error, r2_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error, r2_score, confusion_matrix, classification_report
+import pickle
+import io
+from datetime import datetime
 
 
 st.title("Automated EDA and Machine Learning App")
@@ -108,32 +111,87 @@ if uploaded_file is not None:
             st.warning("Please clean the data in the 'Data Cleaning' tab first.")
         else:
             st.subheader("Visualizations")
+            
+            # Generate EDA Report
+            eda_report = []
+            eda_report.append("# Exploratory Data Analysis Report")
+            eda_report.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            eda_report.append(f"\n## Dataset Overview")
+            eda_report.append(f"- Shape: {df_cleaned.shape}")
+            eda_report.append(f"- Columns: {list(df_cleaned.columns)}")
+            eda_report.append(f"- Data types: {df_cleaned.dtypes.to_dict()}")
+            eda_report.append(f"\n## Missing Values")
+            missing_summary = df_cleaned.isnull().sum()
+            eda_report.append(f"{missing_summary.to_dict()}")
+            eda_report.append(f"\n## Statistical Summary")
+            eda_report.append(f"{df_cleaned.describe().to_string()}")
+            
             for col in df_cleaned.columns:
                 if df_cleaned[col].dtype == 'object':
                     st.subheader(f"Bar plot for {col}")
-                    fig, ax = plt.subplots()
-                    sns.countplot(
-                        y=col,
-                        data=df_cleaned,
-                        order=df_cleaned[col].value_counts().index[:10],
-                        ax=ax
-                    )
-                    st.pyplot(fig)
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    try:
+                        sns.countplot(
+                            y=col,
+                            data=df_cleaned,
+                            order=df_cleaned[col].value_counts().index[:10],
+                            ax=ax
+                        )
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        
+                        # Add to report
+                        eda_report.append(f"\n## {col} (Categorical)")
+                        eda_report.append(f"Value counts: {df_cleaned[col].value_counts().head(10).to_dict()}")
+                        
+                    except Exception as e:
+                        st.error(f"Error creating bar plot for {col}: {str(e)}")
+                    finally:
+                        plt.close(fig)
                 else:
                     st.subheader(f"Histogram for {col}")
-                    fig, ax = plt.subplots()
-                    sns.histplot(df_cleaned[col], kde=True, ax=ax)
-                    st.pyplot(fig)
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    try:
+                        sns.histplot(df_cleaned[col], kde=True, ax=ax)
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        
+                        # Add to report
+                        eda_report.append(f"\n## {col} (Numerical)")
+                        eda_report.append(f"Mean: {df_cleaned[col].mean():.4f}")
+                        eda_report.append(f"Std: {df_cleaned[col].std():.4f}")
+                        eda_report.append(f"Min: {df_cleaned[col].min():.4f}")
+                        eda_report.append(f"Max: {df_cleaned[col].max():.4f}")
+                        
+                    except Exception as e:
+                        st.error(f"Error creating histogram for {col}: {str(e)}")
+                    finally:
+                        plt.close(fig)
 
                     # Boxplot for numeric columns with enough data
                     if df_cleaned[col].dtype != 'object':
                         if df_cleaned[col].nunique(dropna=True) > 1:
                             st.subheader(f"Boxplot for {col}")
-                            fig, ax = plt.subplots()
-                            sns.boxplot(x=df_cleaned[col], ax=ax)
-                            st.pyplot(fig)
+                            fig, ax = plt.subplots(figsize=(10, 6))
+                            try:
+                                sns.boxplot(x=df_cleaned[col], ax=ax)
+                                plt.tight_layout()
+                                st.pyplot(fig)
+                            except Exception as e:
+                                st.error(f"Error creating boxplot for {col}: {str(e)}")
+                            finally:
+                                plt.close(fig)
                         else:
                             st.info(f"Skipping boxplot for {col} — not enough unique values.")
+            
+            # Download EDA Report
+            eda_report_text = '\n'.join(eda_report)
+            st.download_button(
+                label="Download EDA Report",
+                data=eda_report_text.encode('utf-8'),
+                file_name=f'eda_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt',
+                mime='text/plain'
+            )
 
     # TAB 4 - Machine Learning Preparation
     with tab4:
@@ -146,19 +204,19 @@ if uploaded_file is not None:
             for col in df_ml.select_dtypes(include='object').columns:
                 df_ml[col] = le.fit_transform(df_ml[col].astype(str))
 
-        # Select numeric columns again after encoding
-        numeric_cols = df_ml.select_dtypes(include=[np.number]).columns
+            # Select numeric columns again after encoding
+            numeric_cols = df_ml.select_dtypes(include=[np.number]).columns
 
-        # Handle any missing values in numeric columns
-        df_ml[numeric_cols] = df_ml[numeric_cols].fillna(0)
+            # Handle any missing values in numeric columns
+            df_ml[numeric_cols] = df_ml[numeric_cols].fillna(0)
 
-        # Scale numeric features
-        scaler = StandardScaler()
-        df_ml[numeric_cols] = scaler.fit_transform(df_ml[numeric_cols])
+            # Scale numeric features
+            scaler = StandardScaler()
+            df_ml[numeric_cols] = scaler.fit_transform(df_ml[numeric_cols])
 
-        st.subheader("Prepared DataFrame for Machine Learning")
-        st.write(df_ml.head())
-        st.success("Data is now ready for modeling.")
+            st.subheader("Prepared DataFrame for Machine Learning")
+            st.write(df_ml.head())
+            st.success("Data is now ready for modeling.")
 
     # TAB 5 - Apply Machine Learning
     with tab5:
@@ -169,45 +227,190 @@ if uploaded_file is not None:
             target_variable = st.selectbox("Select the target variable", df_ml.columns)
 
             if target_variable:
-                X = df_ml.drop(columns=[target_variable])
-                y = df_ml[target_variable]
+                try:
+                    X = df_ml.drop(columns=[target_variable])
+                    y = df_ml[target_variable]
 
-                if y.nunique() <= 10:
-                    problem_type = "Classification"
-                else:
-                    problem_type = "Regression"
+                    # Check if we have enough data
+                    if len(X) < 10:
+                        st.error("Not enough data for machine learning. Need at least 10 samples.")
+                        st.stop()
 
-                st.write(f"Problem Type: {problem_type}")
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-                if problem_type == "Classification":
-                    models = {
-                        "Logistic Regression": LogisticRegression(),
-                        "Decision Tree": DecisionTreeClassifier(),
-                        "Random Forest": RandomForestClassifier()
-                    }
-                else:
-                    models = {
-                        "Linear Regression": LinearRegression(),
-                        "Decision Tree": DecisionTreeRegressor(),
-                        "Random Forest": RandomForestRegressor()
-                    }
-
-                for name, model in models.items():
-                    st.subheader(f"Model: {name}")
-                    model.fit(X_train, y_train)
-                    y_pred = model.predict(X_test)
-
-                    st.subheader("Model Evaluation")
-                    if problem_type == "Classification":
-                        st.write(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-                        st.write(f"Precision: {precision_score(y_test, y_pred, average='weighted'):.4f}")
-                        st.write(f"Recall: {recall_score(y_test, y_pred, average='weighted'):.4f}")
-                        st.write(f"F1 Score: {f1_score(y_test, y_pred, average='weighted'):.4f}")
+                    # Determine problem type
+                    unique_values = y.nunique()
+                    if unique_values <= 10:
+                        problem_type = "Classification"
+                        st.info(f"Detected Classification problem with {unique_values} unique classes")
                     else:
-                        st.write(f"Mean Squared Error: {mean_squared_error(y_test, y_pred):.4f}")
-                        st.write(f"R^2 Score: {r2_score(y_test, y_pred):.4f}")
+                        problem_type = "Regression"
+                        st.info(f"Detected Regression problem with {unique_values} unique values")
 
+                    # Model selection
+                    if problem_type == "Classification":
+                        available_models = {
+                            "Logistic Regression": LogisticRegression(max_iter=1000),
+                            "Decision Tree": DecisionTreeClassifier(random_state=42),
+                            "Random Forest": RandomForestClassifier(random_state=42, n_estimators=100)
+                        }
+                    else:
+                        available_models = {
+                            "Linear Regression": LinearRegression(),
+                            "Decision Tree": DecisionTreeRegressor(random_state=42),
+                            "Random Forest": RandomForestRegressor(random_state=42, n_estimators=100)
+                        }
 
+                    # Model selection dropdown
+                    selected_model_name = st.selectbox(
+                        "Choose a model to train:",
+                        list(available_models.keys())
+                    )
 
+                    # Train/test split
+                    test_size = st.slider("Test set size", 0.1, 0.5, 0.2, 0.05)
+                    
+                    try:
+                        X_train, X_test, y_train, y_test = train_test_split(
+                            X, y, test_size=test_size, random_state=42, stratify=y if problem_type == "Classification" else None
+                        )
+                    except ValueError:
+                        # If stratify fails, use without stratification
+                        X_train, X_test, y_train, y_test = train_test_split(
+                            X, y, test_size=test_size, random_state=42
+                        )
+
+                    if st.button("Train Model"):
+                        with st.spinner(f"Training {selected_model_name}..."):
+                            try:
+                                # Get selected model
+                                model = available_models[selected_model_name]
+                                
+                                # Train model
+                                model.fit(X_train, y_train)
+                                y_pred = model.predict(X_test)
+
+                                st.success(f"✅ {selected_model_name} trained successfully!")
+
+                                # Model Evaluation
+                                st.subheader("📊 Model Performance")
+                                
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    if problem_type == "Classification":
+                                        accuracy = accuracy_score(y_test, y_pred)
+                                        precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+                                        recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+                                        f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+                                        
+                                        st.metric("Accuracy", f"{accuracy:.4f}")
+                                        st.metric("Precision", f"{precision:.4f}")
+                                        st.metric("Recall", f"{recall:.4f}")
+                                        st.metric("F1 Score", f"{f1:.4f}")
+                                        
+                                        # Classification Report
+                                        st.subheader("📋 Classification Report")
+                                        class_report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+                                        st.text(classification_report(y_test, y_pred, zero_division=0))
+                                        
+                                    else:
+                                        mse = mean_squared_error(y_test, y_pred)
+                                        rmse = np.sqrt(mse)
+                                        r2 = r2_score(y_test, y_pred)
+                                        mae = np.mean(np.abs(y_test - y_pred))
+                                        
+                                        st.metric("Mean Squared Error", f"{mse:.4f}")
+                                        st.metric("Root Mean Squared Error", f"{rmse:.4f}")
+                                        st.metric("R² Score", f"{r2:.4f}")
+                                        st.metric("Mean Absolute Error", f"{mae:.4f}")
+
+                                with col2:
+                                    if problem_type == "Classification":
+                                        # Confusion Matrix
+                                        st.subheader("🔥 Confusion Matrix")
+                                        cm = confusion_matrix(y_test, y_pred)
+                                        fig, ax = plt.subplots(figsize=(8, 6))
+                                        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
+                                        ax.set_xlabel('Predicted')
+                                        ax.set_ylabel('Actual')
+                                        ax.set_title('Confusion Matrix')
+                                        st.pyplot(fig)
+                                        plt.close(fig)
+                                    else:
+                                        # Actual vs Predicted scatter plot
+                                        st.subheader("📈 Actual vs Predicted")
+                                        fig, ax = plt.subplots(figsize=(8, 6))
+                                        ax.scatter(y_test, y_pred, alpha=0.7)
+                                        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+                                        ax.set_xlabel('Actual')
+                                        ax.set_ylabel('Predicted')
+                                        ax.set_title('Actual vs Predicted Values')
+                                        st.pyplot(fig)
+                                        plt.close(fig)
+
+                                # Feature Importance (for tree-based models)
+                                if hasattr(model, 'feature_importances_'):
+                                    st.subheader("🎯 Feature Importance")
+                                    feature_importance = pd.DataFrame({
+                                        'feature': X.columns,
+                                        'importance': model.feature_importances_
+                                    }).sort_values('importance', ascending=False)
+                                    
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+                                    sns.barplot(data=feature_importance.head(10), x='importance', y='feature', ax=ax)
+                                    ax.set_title('Top 10 Feature Importances')
+                                    st.pyplot(fig)
+                                    plt.close(fig)
+
+                                # Download trained model
+                                st.subheader("💾 Download Trained Model")
+                                model_buffer = io.BytesIO()
+                                pickle.dump(model, model_buffer)
+                                model_buffer.seek(0)
+                                
+                                st.download_button(
+                                    label="Download Trained Model",
+                                    data=model_buffer.getvalue(),
+                                    file_name=f'{selected_model_name.lower().replace(" ", "_")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pkl',
+                                    mime='application/octet-stream'
+                                )
+
+                                # Model summary report
+                                report_lines = []
+                                report_lines.append(f"# Machine Learning Model Report")
+                                report_lines.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                                report_lines.append(f"\n## Model Details")
+                                report_lines.append(f"- Model: {selected_model_name}")
+                                report_lines.append(f"- Problem Type: {problem_type}")
+                                report_lines.append(f"- Target Variable: {target_variable}")
+                                report_lines.append(f"- Training Set Size: {len(X_train)}")
+                                report_lines.append(f"- Test Set Size: {len(X_test)}")
+                                report_lines.append(f"- Features: {list(X.columns)}")
+                                
+                                if problem_type == "Classification":
+                                    report_lines.append(f"\n## Performance Metrics")
+                                    report_lines.append(f"- Accuracy: {accuracy:.4f}")
+                                    report_lines.append(f"- Precision: {precision:.4f}")
+                                    report_lines.append(f"- Recall: {recall:.4f}")
+                                    report_lines.append(f"- F1 Score: {f1:.4f}")
+                                else:
+                                    report_lines.append(f"\n## Performance Metrics")
+                                    report_lines.append(f"- Mean Squared Error: {mse:.4f}")
+                                    report_lines.append(f"- Root Mean Squared Error: {rmse:.4f}")
+                                    report_lines.append(f"- R² Score: {r2:.4f}")
+                                    report_lines.append(f"- Mean Absolute Error: {mae:.4f}")
+
+                                model_report = '\n'.join(report_lines)
+                                st.download_button(
+                                    label="Download Model Report",
+                                    data=model_report.encode('utf-8'),
+                                    file_name=f'model_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt',
+                                    mime='text/plain'
+                                )
+
+                            except Exception as e:
+                                st.error(f"❌ Error training model: {str(e)}")
+                                st.info("💡 Try selecting a different model or check your data preprocessing.")
+
+                except Exception as e:
+                    st.error(f"❌ Error in data preparation: {str(e)}")
+                    st.info("💡 Please ensure your data is properly cleaned and prepared in the previous tabs.")
