@@ -12,7 +12,9 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error, r2_score, confusion_matrix, classification_report
 import pickle
 import io
+import base64
 from datetime import datetime
+import html
 
 
 st.title("Automated EDA and Machine Learning App")
@@ -113,22 +115,52 @@ if uploaded_file is not None:
             st.subheader("Visualizations")
             
             # Generate EDA Report
-            eda_report = []
-            eda_report.append("# Exploratory Data Analysis Report")
-            eda_report.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            eda_report.append(f"\n## Dataset Overview")
-            eda_report.append(f"- Shape: {df_cleaned.shape}")
-            eda_report.append(f"- Columns: {list(df_cleaned.columns)}")
-            eda_report.append(f"- Data types: {df_cleaned.dtypes.to_dict()}")
-            eda_report.append(f"\n## Missing Values")
+            report_html = []
+            report_html.append("<!DOCTYPE html>")
+            report_html.append("<html><head>")
+            report_html.append("<title>EDA Report</title>")
+            report_html.append("<style>")
+            report_html.append("body { font-family: Arial, sans-serif; margin: 40px; }")
+            report_html.append("h1 { color: #2c3e50; }")
+            report_html.append("h2 { color: #3498db; border-bottom: 1px solid #3498db; padding-bottom: 5px; }")
+            report_html.append("h3 { color: #2980b9; }")
+            report_html.append(".section { margin-bottom: 30px; }")
+            report_html.append(".explanation { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px; }")
+            report_html.append("</style>")
+            report_html.append("</head><body>")
+            report_html.append(f"<h1>Exploratory Data Analysis Report</h1>")
+            report_html.append(f"<p><strong>Generated on:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
+            
+            report_html.append('<div class="section">')
+            report_html.append("<h2>Dataset Overview</h2>")
+            report_html.append(f"<p><strong>Shape:</strong> {df_cleaned.shape}</p>")
+            report_html.append(f"<p><strong>Columns:</strong> {', '.join(df_cleaned.columns)}</p>")
+            report_html.append(f"<p><strong>Data Types:</strong> {df_cleaned.dtypes.to_string()}</p>")
+            report_html.append('</div>')
+            
+            report_html.append('<div class="section">')
+            report_html.append("<h2>Missing Values</h2>")
             missing_summary = df_cleaned.isnull().sum()
-            eda_report.append(f"{missing_summary.to_dict()}")
-            eda_report.append(f"\n## Statistical Summary")
-            eda_report.append(f"{df_cleaned.describe().to_string()}")
+            report_html.append(f"<p>{missing_summary.to_string()}</p>")
+            report_html.append('</div>')
+            
+            report_html.append('<div class="section">')
+            report_html.append("<h2>Statistical Summary</h2>")
+            report_html.append(f"<pre>{html.escape(df_cleaned.describe().to_string())}</pre>")
+            report_html.append('</div>')
             
             for col in df_cleaned.columns:
                 if df_cleaned[col].dtype == 'object':
                     st.subheader(f"Bar plot for {col}")
+                    
+                    # Explanation
+                    explanation = (
+                        "**Why this chart?** A bar plot is ideal for categorical variables as it shows "
+                        "the frequency distribution of categories. This helps identify the most common "
+                        "categories and potential data quality issues."
+                    )
+                    st.markdown(explanation)
+                    
                     fig, ax = plt.subplots(figsize=(10, 6))
                     try:
                         sns.countplot(
@@ -137,34 +169,72 @@ if uploaded_file is not None:
                             order=df_cleaned[col].value_counts().index[:10],
                             ax=ax
                         )
+                        plt.title(f"Top 10 Categories for {col}")
                         plt.tight_layout()
                         st.pyplot(fig)
                         
                         # Add to report
-                        eda_report.append(f"\n## {col} (Categorical)")
-                        eda_report.append(f"Value counts: {df_cleaned[col].value_counts().head(10).to_dict()}")
+                        report_html.append(f'<div class="section">')
+                        report_html.append(f'<h2>{col} (Categorical)</h2>')
+                        report_html.append(f'<div class="explanation">{explanation}</div>')
+                        
+                        # Save plot to buffer and encode
+                        buf = io.BytesIO()
+                        fig.savefig(buf, format='png', bbox_inches='tight')
+                        buf.seek(0)
+                        img_data = base64.b64encode(buf.read()).decode('utf-8')
+                        buf.close()
+                        
+                        report_html.append(f'<img src="data:image/png;base64,{img_data}" alt="Bar plot for {col}" style="max-width: 100%;">')
+                        report_html.append(f"<h3>Top 10 Categories</h3>")
+                        report_html.append(f"<pre>{df_cleaned[col].value_counts().head(10).to_string()}</pre>")
+                        report_html.append('</div>')
                         
                     except Exception as e:
                         st.error(f"Error creating bar plot for {col}: {str(e)}")
+                        report_html.append(f"<p>Error creating bar plot for {col}: {html.escape(str(e))}</p>")
                     finally:
                         plt.close(fig)
                 else:
                     st.subheader(f"Histogram for {col}")
+                    
+                    # Explanation
+                    explanation = (
+                        "**Why this chart?** A histogram shows the distribution of numerical data by "
+                        "dividing it into bins and counting observations in each bin. It helps visualize "
+                        "the shape, central tendency, and spread of the data, and identify outliers."
+                    )
+                    st.markdown(explanation)
+                    
                     fig, ax = plt.subplots(figsize=(10, 6))
                     try:
                         sns.histplot(df_cleaned[col], kde=True, ax=ax)
+                        plt.title(f"Distribution of {col}")
                         plt.tight_layout()
                         st.pyplot(fig)
                         
                         # Add to report
-                        eda_report.append(f"\n## {col} (Numerical)")
-                        eda_report.append(f"Mean: {df_cleaned[col].mean():.4f}")
-                        eda_report.append(f"Std: {df_cleaned[col].std():.4f}")
-                        eda_report.append(f"Min: {df_cleaned[col].min():.4f}")
-                        eda_report.append(f"Max: {df_cleaned[col].max():.4f}")
+                        report_html.append(f'<div class="section">')
+                        report_html.append(f'<h2>{col} (Numerical)</h2>')
+                        report_html.append(f'<div class="explanation">{explanation}</div>')
+                        
+                        # Save plot to buffer and encode
+                        buf = io.BytesIO()
+                        fig.savefig(buf, format='png', bbox_inches='tight')
+                        buf.seek(0)
+                        img_data = base64.b64encode(buf.read()).decode('utf-8')
+                        buf.close()
+                        
+                        report_html.append(f'<img src="data:image/png;base64,{img_data}" alt="Histogram for {col}" style="max-width: 100%;">')
+                        report_html.append(f"<h3>Statistical Summary</h3>")
+                        report_html.append(f"<p>Mean: {df_cleaned[col].mean():.4f}</p>")
+                        report_html.append(f"<p>Std: {df_cleaned[col].std():.4f}</p>")
+                        report_html.append(f"<p>Min: {df_cleaned[col].min():.4f}</p>")
+                        report_html.append(f"<p>Max: {df_cleaned[col].max():.4f}</p>")
                         
                     except Exception as e:
                         st.error(f"Error creating histogram for {col}: {str(e)}")
+                        report_html.append(f"<p>Error creating histogram for {col}: {html.escape(str(e))}</p>")
                     finally:
                         plt.close(fig)
 
@@ -172,25 +242,58 @@ if uploaded_file is not None:
                     if df_cleaned[col].dtype != 'object':
                         if df_cleaned[col].nunique(dropna=True) > 1:
                             st.subheader(f"Boxplot for {col}")
+                            
+                            # Explanation
+                            explanation = (
+                                "**Why this chart?** A boxplot visualizes the five-number summary of a dataset: "
+                                "minimum, first quartile, median, third quartile, and maximum. It helps identify "
+                                "outliers and understand the spread and skewness of the data."
+                            )
+                            st.markdown(explanation)
+                            
                             fig, ax = plt.subplots(figsize=(10, 6))
                             try:
                                 sns.boxplot(x=df_cleaned[col], ax=ax)
+                                plt.title(f"Boxplot of {col}")
                                 plt.tight_layout()
                                 st.pyplot(fig)
+                                
+                                # Add to report
+                                report_html.append(f'<div class="section">')
+                                report_html.append(f'<h3>Boxplot Analysis</h3>')
+                                report_html.append(f'<div class="explanation">{explanation}</div>')
+                                
+                                # Save plot to buffer and encode
+                                buf = io.BytesIO()
+                                fig.savefig(buf, format='png', bbox_inches='tight')
+                                buf.seek(0)
+                                img_data = base64.b64encode(buf.read()).decode('utf-8')
+                                buf.close()
+                                
+                                report_html.append(f'<img src="data:image/png;base64,{img_data}" alt="Boxplot for {col}" style="max-width: 100%;">')
+                                report_html.append('</div>')  # Close boxplot section
+                                
                             except Exception as e:
                                 st.error(f"Error creating boxplot for {col}: {str(e)}")
+                                report_html.append(f"<p>Error creating boxplot for {col}: {html.escape(str(e))}</p>")
                             finally:
                                 plt.close(fig)
                         else:
                             st.info(f"Skipping boxplot for {col} — not enough unique values.")
+                            report_html.append(f"<p>Skipped boxplot for {col} due to insufficient unique values</p>")
+                    
+                    report_html.append('</div>')  # Close numerical section
+            
+            # Finalize report
+            report_html.append("</body></html>")
+            report_html_text = '\n'.join(report_html)
             
             # Download EDA Report
-            eda_report_text = '\n'.join(eda_report)
             st.download_button(
                 label="Download EDA Report",
-                data=eda_report_text.encode('utf-8'),
-                file_name=f'eda_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt',
-                mime='text/plain'
+                data=report_html_text.encode('utf-8'),
+                file_name=f'eda_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.html',
+                mime='text/html'
             )
 
     # TAB 4 - Machine Learning Preparation
